@@ -1,0 +1,154 @@
+db-futurebi-rawdata sql-futurebi-examples.database.windows.net
+
+SELECT Count([RiskID])
+  FROM [dbo].[vwRiskSummary]
+-------------------------------------------------------------------------------
+
+SELECT TOP (1000) [RiskID]
+      ,[Status]
+      ,[InsertionRank]
+  FROM [dbo].[vwRiskSummary]
+
+ShowColumns('[dbo].[vwRiskSummary]',"RiskID","InsertionRank","Status")
+CountRows(Gallery1.AllItems)
+
+Sort('[dbo].[vwRiskSummary]',RiskID>500)
+ShowColumns(Sort('[dbo].[vwRiskSummary]',RiskID<500),"RiskID","InsertionRank","Status")
+
+Raw data
+---------------------------------------------------
+ClearCollect(RiskSummaryFirst,ShowColumns('[dbo].[vwRiskSummary]',"RiskID","Status","InsertionRank"))
+-------------------------------------------------------------------------------
+Gallery Example
+-------------------------------------------------------------------------------
+Sort('[dbo].[vwRiskSummary]',RiskID>100) 
+-----------------------------------------------------
+One Collection
+-----------------------------------------------------
+ClearCollect(RiskSummaryFirst,ShowColumns('[dbo].[vwRiskSummary]',"RiskID","Status","InsertionRank"))
+-------------------------------------------------------
+Two collections
+------------------------------------------------------
+Concurrent(ClearCollect(RiskSummarySeconda,ShowColumns(Filter(
+            '[dbo].[vwRiskSummary]',
+            InsertionRank <= 500),"RiskID","Status","InsertionRank")),
+
+ClearCollect(RiskSummarySecondb, ShowColumns(Filter(
+            '[dbo].[vwRiskSummary]',
+            InsertionRank > 500 && InsertionRank <= 1000
+        ),"RiskID","Status","InsertionRank")),
+
+
+ClearCollect(RiskSummarySecondc, ShowColumns(Filter(
+            '[dbo].[vwRiskSummary]',
+            InsertionRank > 1000 && InsertionRank <= 1500
+        ),"RiskID","Status","InsertionRank")));
+
+ClearCollect(RiskSummarySecond,RiskSummarySeconda,RiskSummarySecondb,RiskSummarySecondc)
+
+-------------------------------------------------------
+
+Looping
+--------------------------------------------------------
+
+UpdateContext({MinRec: First(SortByColumns('[dbo].[vwRiskSummary]', "InsertionRank", Ascending)).InsertionRank}); 
+ 
+UpdateContext({MaxRec: First(SortByColumns('[dbo].[vwRiskSummary]', "InsertionRank", Descending)).InsertionRank}); 
+ 
+UpdateContext({NumberOfPasses: RoundUp((MaxRec - MinRec) / 500,0)}); 
+
+ClearCollect(
+    Numbers,
+        [1,2,3,4,5,6,7,8,9,10]);
+ 
+ClearCollect(colNumbersTable, Filter(Numbers, Value <= NumberOfPasses)); 
+
+Clear(MyBigTable); 
+ForAll(
+colNumbersTable
+,Collect
+(
+MyBigTable,
+ShowColumns(Filter
+(
+'[dbo].[vwRiskSummary]',(InsertionRank) >= MinRec + ((Value - 1) * 500) && InsertionRank < MinRec + (Value * 500)
+),"RiskID","Status","InsertionRank")
+)
+
+);
+------------------------------------------------------------------------------
+App Launch 500 Limit
+------------------------------------------------------------------------------
+
+Set(MinRec1, First(SortByColumns('[dbo].[vwRiskSummary]', "InsertionRank", Ascending)).InsertionRank); 
+ 
+Set(MaxRec1, First(SortByColumns('[dbo].[vwRiskSummary]', "InsertionRank", Descending)).InsertionRank); 
+ 
+Set(NumberOfPasses1, RoundUp((MaxRec1 - MinRec1) / 500,0)); 
+
+ClearCollect(
+    Numbers,
+        [1,2,3,4,5,6,7,8,9,10]);
+ 
+ClearCollect(colNumbersTable, Filter(Numbers, Value <= NumberOfPasses1)); 
+
+Clear(MyBigTable1); 
+ForAll(
+colNumbersTable
+,Collect
+(
+MyBigTable1,
+Filter
+(
+'[dbo].[vwRiskSummary]',(InsertionRank) >= MinRec1 + ((Value - 1) * 500) && InsertionRank < MinRec1 + (Value * 500)
+)
+)
+
+);
+ ----------------------------------------------------------------------------------------
+App Launch 2000 Limit - change limit at this point
+----------------------------------------------------------------------------------------
+
+Set(MinRec1, First(SortByColumns('[dbo].[vwRiskSummary]', "InsertionRank", Ascending)).InsertionRank); 
+ 
+Set(MaxRec1, First(SortByColumns('[dbo].[vwRiskSummary]', "InsertionRank", Descending)).InsertionRank); 
+ 
+Set(NumberOfPasses1, RoundUp((MaxRec1 - MinRec1) / 500,0)); 
+
+ClearCollect(
+    Numbers,
+        [1,2,3,4,5,6,7,8,9,10]);
+ 
+ClearCollect(colNumbersTable, Filter(Numbers, Value <= NumberOfPasses1)); 
+
+Clear(MyBigTable1); 
+ForAll(
+colNumbersTable
+,Collect
+(
+MyBigTable1,
+ShowColumns(Filter
+(
+'[dbo].[vwRiskSummary]',(InsertionRank) >= MinRec1 + ((Value - 1) * 500) && InsertionRank < MinRec1 + (Value * 500)
+
+),"RiskID","InsertionRank","Status"))
+
+);
+
+20000
+
+"Welcome: "& User().FullName
+
+
+Set(
+    CurrentUser,
+    User())
+
+
+
+
+
+
+
+
+ 
